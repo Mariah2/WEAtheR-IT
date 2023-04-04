@@ -1,0 +1,30 @@
+<main *ngIf="dailyForecasts$ | async as dailyForecasts"
+    class="flex overflow-y-auto px-16 pt-4 justify-center dash h-fullscreen max-h-fullscreen w-full">
+    <div class="flex flex-col w-40">
+        <span class="h-10 flex space-x-8 justify-center">
+            <mat-icon class="material-icons-outlined">
+                calendar_month
+            </mat-icon>
+            <span class="text-accent-color">|</span>
+            <mat-icon class="material-icons-outlined">
+                schedule
+            </mat-icon>
+        </span>
+        <span class="h-20 font-serif multiline border-r-2 bd-color"
+            *ngFor="let dailyForecast of dailyForecasts$ | async">
+            {{dailyForecast.sunset | date:'EEEE'}}&#10;{{dailyForecast.sunset | date: 'MMMM d'}}
+        </span>
+    </div>
+
+    <table #forecastsTable class="flex flex-wrap overflow-x-auto w-3/4 font-serif">
+        <tr class="flex h-10">
+            <td [attr.id]="i" class="text-center w-20" *ngFor="let item of [].constructor(24); let i = index">
+                {{i}}:00
+            </td>
+        </tr>
+        <tr class="flex h-20" *ngFor="let dailyForecast of dailyForecasts$ | async">
+            <td class="w-20 text-center"
+                *ngFor="let hourlyForecast of dailyForecast.hourlyForecasts">{{hourlyForecast.temperature_2m}} °C</td>
+        </tr>
+    </table>
+</main>
