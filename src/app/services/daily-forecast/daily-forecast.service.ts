@@ -6,6 +6,7 @@ import ForecastResponseModel from 'src/app/models/forecast-response.model';
 import DailyForecastModel from 'src/app/models/daily-forecast.model';
 import HourlyForecastModel from 'src/app/models/hourly-forecast.model';
 import { Observable, BehaviorSubject } from 'rxjs';
+import { ForecastStatus } from 'src/app/utils/forecast-status';
 
 
 @Injectable({
@@ -23,37 +24,80 @@ export class DailyForecastService {
   }
 
   setDailyForecasts(): void {
-    this.http.get<ForecastResponseModel>(`${this.forecastApiUrl}/forecast?latitude=47.18592&longitude=23.0588416&longitude=23.05&hourly=temperature_2m,relativehumidity_2m,rain,showers,snowfall,cloudcover&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum&start_date=2023-04-04&end_date=2023-04-10&timezone=Europe%2FBucharest`).subscribe({
-      next: (value: ForecastResponseModel) => {
-        let dailyForecasts: DailyForecastModel[] = [];
+    const today = new Date();
+    const startDate = today.toISOString().substring(0, 10);
+    
+    today.setDate(today.getDate() + 6)
+    const endDate = today.toISOString().substring(0, 10);
 
-        for (let i = 0; i < value.daily.sunrise.length; i++) {
-          const newDailyForecast: DailyForecastModel = {
-            sunrise: value.daily.sunrise[i],
-            sunset: value.daily.sunset[i],
-            hourlyForecasts: [],
-          };
-
-          dailyForecasts.push(newDailyForecast);
-        }
-
-        for (let i = 0; i < value.hourly.rain.length; i++) {
-          const newHourlyForecast: HourlyForecastModel = {
-            cloudcover: value.hourly.cloudcover[i],
-            rain: value.hourly.rain[i],
-            relativehumidity_2m: value.hourly.relativehumidity_2m[i],
-            showers: value.hourly.showers[i],
-            snowfall: value.hourly.snowfall[i],
-            temperature_2m: Math.round(value.hourly.temperature_2m[i]),
-            time: value.hourly.time[i]
-          };
-
-          dailyForecasts[Math.floor(i / 24)].hourlyForecasts.push(newHourlyForecast);
-        }
-
-        this.dailyForecastsSubject.next(dailyForecasts);
+    this.http.get<ForecastResponseModel>(`${this.forecastApiUrl}&timezone=Europe%2FBucharest&latitude=47.18592&longitude=23.0588416&start_date=${startDate}&end_date=${endDate}`).subscribe({
+      next: (data: ForecastResponseModel) => {
+        this.dailyForecastsSubject.next(this.getDailyForecastsFromData(data));
       }
     });
- }
+  }
+
+  private getDailyForecastsFromData(data: ForecastResponseModel): DailyForecastModel[] {
+    let dailyForecasts: DailyForecastModel[] = [];
+
+    for (let i = 0; i < data.daily.sunrise.length; i++) {
+      const newDailyForecast: DailyForecastModel = {
+        sunrise: data.daily.sunrise[i],
+        sunset: data.daily.sunset[i],
+        hourlyForecasts: [],
+      };
+
+      dailyForecasts.push(newDailyForecast);
+    }
+
+    for (let i = 0; i < data.hourly.rain.length; i++) {
+      const dayIndex = Math.floor(i / 24);
+      const newHourlyForecast: HourlyForecastModel = {
+        forecastStatus: this.getforecastStatus(
+          data.hourly.cloudcover[i],
+          data.hourly.rain[i],
+          data.hourly.snowfall[i],
+          data.hourly.time[i],
+          dailyForecasts[dayIndex].sunrise,
+          dailyForecasts[dayIndex].sunset),
+        relativehumidity_2m: data.hourly.relativehumidity_2m[i],
+        temperature_2m: Math.round(data.hourly.temperature_2m[i]),
+        time: data.hourly.time[i]
+      };
+
+      dailyForecasts[dayIndex].hourlyForecasts.push(newHourlyForecast);
+    }
+    return dailyForecasts;
+  }
+
+  private checkIfDay(sunrise: Date, sunset: Date, time: Date): boolean {
+    return sunrise < time && time < sunset;
+  }
+
+  private getforecastStatus(
+    cloudcover: number,
+    rain: number,
+    snowfall: number,
+    time: Date,
+    sunrise: Date,
+    sunset: Date): ForecastStatus {
+    if (rain > snowfall) {
+      return ForecastStatus.Rainy;
+    }
+
+    if (snowfall > rain) {
+      return ForecastStatus.Snowy;
+    }
+
+    if (cloudcover >= 25 && cloudcover <= 75) {
+      return this.checkIfDay(sunrise, sunset, time) ? ForecastStatus.SunnyCloudy : ForecastStatus.NightCloudy;
+    }
+
+    if (cloudcover > 75) {
+      return ForecastStatus.Cloudy;
+    }
+
+    return this.checkIfDay(sunrise, sunset, time) ? ForecastStatus.Sunny : ForecastStatus.Night;
+  }
 }
 

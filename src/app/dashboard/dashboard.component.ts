@@ -45,12 +45,11 @@ export class DashboardComponent implements OnInit {
       }
     });
   }
-  
-  scrollToNowHour(): void {
-    const date = new Date();
-    const currentHour = date.getHours();
-    const nowHour = currentHour < 23 ? currentHour + 1 : currentHour;
 
-    document.getElementById(`${nowHour}`)?.scrollIntoView();
+  scrollToNowHour(): void {
+    const currentHour = new Date().getHours();
+    const hourId = currentHour < 23 ? currentHour + 1 : currentHour;
+
+    document.getElementById(`${hourId}`)?.scrollIntoView();
   }
 }

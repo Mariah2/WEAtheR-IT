@@ -1,9 +1,8 @@
+import { ForecastStatus } from "../utils/forecast-status";
+
 export default interface HourlyForecastModel {
-    cloudcover: number;
-    rain: number;
+    forecastStatus: ForecastStatus; 
     relativehumidity_2m: number;
-    showers: number;
-    snowfall: number;
     temperature_2m: number;
     time: Date;
 }
