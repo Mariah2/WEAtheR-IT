@@ -1,3 +1,38 @@
+
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use '@angular/material' as mat;
+// Plus imports for other components in your app.
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat.core();
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue. Available color palettes: https://material.io/design/color/
+$weather-it-primary: mat.define-palette(mat.$indigo-palette);
+$weather-it-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+
+// The warn palette is optional (defaults to red).
+$weather-it-warn: mat.define-palette(mat.$red-palette);
+
+// Create the theme object. A theme consists of configurations for individual
+// theming systems such as "color" or "typography".
+$weather-it-theme: mat.define-light-theme((
+  color: (
+    primary: $weather-it-primary,
+    accent: $weather-it-accent,
+    warn: $weather-it-warn,
+  )
+));
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@include mat.all-component-themes($weather-it-theme);
+
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
@@ -15,6 +50,29 @@ body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
+.scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 5px;
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  border-radius: 12px;
+}
+
+.scroll::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+:hover.scroll::-webkit-scrollbar-thumb {
+  background-color: #a3b3d2;
+}
+
 .multiline {
   white-space: pre-line;
 }
+
+.mat-mdc-form-field .mdc-notched-outline__notch {
+  border-right: 0px !important;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

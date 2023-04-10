@@ -3,5 +3,9 @@
 }
 
 .title {
-    color: #e8de6f;
+    color: #6fa5b6;
+}
+
+.title-svg {
+    filter: invert(63%) sepia(29%) saturate(447%) hue-rotate(148deg) brightness(94%) contrast(87%);
 }

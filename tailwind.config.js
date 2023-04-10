@@ -16,6 +16,12 @@ module.exports = {
       width: {
         "unset": "unset"
       },
+      blur: {
+        "xs": "2px"
+      },
+      zIndex: {
+        "1": "1"
+      }
     },
   },
   plugins: [],

@@ -5,8 +5,9 @@ import { HttpClient } from '@angular/common/http';
 import ForecastResponseModel from 'src/app/models/forecast-response.model';
 import DailyForecastModel from 'src/app/models/daily-forecast.model';
 import HourlyForecastModel from 'src/app/models/hourly-forecast.model';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, of } from 'rxjs';
 import { ForecastStatus } from 'src/app/utils/forecast-status';
+import GeoLocationTownModel from 'src/app/models/geo-location-town.model';
 
 
 @Injectable({
@@ -23,14 +24,14 @@ export class DailyForecastService {
     return this.dailyForecastsSubject.asObservable();
   }
 
-  setDailyForecasts(): void {
+  setDailyForecasts(city: GeoLocationTownModel): void {
     const today = new Date();
     const startDate = today.toISOString().substring(0, 10);
     
     today.setDate(today.getDate() + 6)
     const endDate = today.toISOString().substring(0, 10);
 
-    this.http.get<ForecastResponseModel>(`${this.forecastApiUrl}&timezone=Europe%2FBucharest&latitude=47.18592&longitude=23.0588416&start_date=${startDate}&end_date=${endDate}`).subscribe({
+    this.http.get<ForecastResponseModel>(`${this.forecastApiUrl}&timezone=${city.timezone}&latitude=${city.latitude}&longitude=${city.longitude}&start_date=${startDate}&end_date=${endDate}`).subscribe({
       next: (data: ForecastResponseModel) => {
         this.dailyForecastsSubject.next(this.getDailyForecastsFromData(data));
       }
