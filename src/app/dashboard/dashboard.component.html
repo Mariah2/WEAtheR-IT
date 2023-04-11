@@ -1,12 +1,16 @@
 <main *ngIf="dailyForecasts$ | async as dailyForecasts"
-    class="flex overflow-y-auto px-4 md:px-16 justify-center h-fullscreen max-h-fullscreen w-full">
-    <img class="absolute blur-xs h-fullscreen max-h-fullscreen w-full opacity-50" src="assets/{{currentForecast}}.jpg" />
-    <div class="flex flex-col md:flex-row md:justify-center w-full">
-        <form class="mt-4 md:mt-14 pr-8">
+    class="flex overflow-y-auto px-4 lg:px-8 justify-center h-fullscreen max-h-fullscreen w-full">
+    <img class="absolute blur-xs h-fullscreen max-h-fullscreen w-full opacity-50"
+        src="assets/jpgs/{{currentForecast}}.jpg" />
+    <div class="flex flex-col lg:flex-row lg:justify-center m-auto w-full">
+        <form class="mt-4 mr-4 lg:mt-14">
             <mat-form-field appearance="fill">
                 <mat-label>City</mat-label>
                 <input type="text" placeholder="Type a name" aria-label="Number" matInput [formControl]="cityControl"
                     [matAutocomplete]="auto">
+                <button type="button" matSuffix mat-icon-button (click)="addToFavorites()" class="ml-4">
+                    <mat-icon>favorite</mat-icon>
+                </button>
                 <mat-autocomplete #auto="matAutocomplete" (optionSelected)="onSelectionChanged($event)"
                     [displayWith]="displayCityName">
                     <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
@@ -16,7 +20,7 @@
             </mat-form-field>
         </form>
 
-        <div class="flex md:w-3/4">
+        <div class="flex lg:w-3/4">
             <div class="flex flex-col pt-4 w-40 blur-none">
                 <span class="h-10 flex space-x-8 justify-center">
                     <mat-icon class="material-icons-outlined">
@@ -33,7 +37,8 @@
                 </span>
             </div>
 
-            <table #forecastsTable class="flex z-1 content-baseline pt-4 flex-wrap scroll overflow-x-auto w-3/4 font-serif">
+            <table #forecastsTable
+                class="flex z-1 content-baseline pt-4 flex-wrap scroll overflow-x-auto w-3/4 font-serif">
                 <tr class="flex h-10">
                     <td [attr.id]="i" class="text-center w-20" *ngFor="let item of [].constructor(24); let i = index">
                         {{i}}:00
@@ -42,7 +47,7 @@
                 <tr class="flex h-20" *ngFor="let dailyForecast of dailyForecasts$ | async">
                     <td class="flex flex-col items-center w-20"
                         *ngFor="let hourlyForecast of dailyForecast.hourlyForecasts">
-                        <img class="w-6 h-6" src="assets/{{hourlyForecast.forecastStatus}}.svg" />
+                        <img class="w-6 h-6" src="assets/svgs/{{hourlyForecast.forecastStatus}}.svg" />
                         <span>{{hourlyForecast.temperature_2m}} °C</span>
                     </td>
                 </tr>

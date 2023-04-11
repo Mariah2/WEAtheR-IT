@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { HttpClient } from '@angular/common/http';
 
@@ -7,7 +7,7 @@ import DailyForecastModel from 'src/app/models/daily-forecast.model';
 import HourlyForecastModel from 'src/app/models/hourly-forecast.model';
 import { Observable, BehaviorSubject, of } from 'rxjs';
 import { ForecastStatus } from 'src/app/utils/forecast-status';
-import GeoLocationTownModel from 'src/app/models/geo-location-town.model';
+import GeoLocationCityModel from 'src/app/models/geo-location-town.model';
 
 
 @Injectable({
@@ -15,19 +15,47 @@ import GeoLocationTownModel from 'src/app/models/geo-location-town.model';
 })
 
 export class DailyForecastService {
+  private readonly http = inject(HttpClient);
+
   private readonly forecastApiUrl = environment.forecastApiUrl;
   private readonly dailyForecastsSubject = new BehaviorSubject<DailyForecastModel[]>([]);
+  private readonly favoriteCitiesSubject = new BehaviorSubject<GeoLocationCityModel[]>([]);
+  
+  addToFavorites(city: GeoLocationCityModel) {
+    const favoriteCities = this.favoriteCitiesSubject.getValue();
 
-  constructor(private readonly http: HttpClient) { }
+    if (!favoriteCities.find(fc => fc.admin2_id === city.admin2_id)) {
+      this.favoriteCitiesSubject.next([...favoriteCities, city]);
+    } else {
+      console.error("City is already in the favorites list!");
+    }
+  }
 
   getDailyForecasts(): Observable<DailyForecastModel[]> {
     return this.dailyForecastsSubject.asObservable();
   }
 
-  setDailyForecasts(city: GeoLocationTownModel): void {
+  getFavoriteCitites(): Observable<GeoLocationCityModel[]> {
+    return this.favoriteCitiesSubject.asObservable();
+  }
+
+  removeFromFavorites(city: GeoLocationCityModel) {
+    const favoriteCities = this.favoriteCitiesSubject.getValue();
+    const index = favoriteCities.findIndex(fc => fc.admin2_id === city.admin2_id);
+
+    if (index > -1) {
+      favoriteCities.splice(index, 1)
+      
+      this.favoriteCitiesSubject.next(favoriteCities);
+    } else {
+      console.error("City is not in favorites list!");
+    }
+  }
+
+  setDailyForecasts(city: GeoLocationCityModel): void {
     const today = new Date();
     const startDate = today.toISOString().substring(0, 10);
-    
+
     today.setDate(today.getDate() + 6)
     const endDate = today.toISOString().substring(0, 10);
 
@@ -36,6 +64,10 @@ export class DailyForecastService {
         this.dailyForecastsSubject.next(this.getDailyForecastsFromData(data));
       }
     });
+  }
+
+  private checkIfDay(sunrise: Date, sunset: Date, time: Date): boolean {
+    return sunrise < time && time < sunset;
   }
 
   private getDailyForecastsFromData(data: ForecastResponseModel): DailyForecastModel[] {
@@ -54,7 +86,7 @@ export class DailyForecastService {
     for (let i = 0; i < data.hourly.rain.length; i++) {
       const dayIndex = Math.floor(i / 24);
       const newHourlyForecast: HourlyForecastModel = {
-        forecastStatus: this.getforecastStatus(
+        forecastStatus: this.getForecastStatus(
           data.hourly.cloudcover[i],
           data.hourly.rain[i],
           data.hourly.snowfall[i],
@@ -71,11 +103,7 @@ export class DailyForecastService {
     return dailyForecasts;
   }
 
-  private checkIfDay(sunrise: Date, sunset: Date, time: Date): boolean {
-    return sunrise < time && time < sunset;
-  }
-
-  private getforecastStatus(
+  private getForecastStatus(
     cloudcover: number,
     rain: number,
     snowfall: number,

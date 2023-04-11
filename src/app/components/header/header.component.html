@@ -1,13 +1,31 @@
-<mat-toolbar class="flex items-center px-8 w-unset h-16 navbar">
+<mat-toolbar class="flex items-center px-8 w-full h-16 navbar">
   <span class="font-serif title text-2xl mr-2">WEAtheR IT</span>
 
-  <mat-icon class="material-icons-outlined title">
-    brightness_4
-  </mat-icon>
-
   <div class="title flex flex-col items-center ml-8" *ngIf="currentHourForecast$ | async as currentHourForecast">
-    <img class="w-6 h-6 title-svg" src="assets/{{currentHourForecast.forecastStatus}}.svg" />
+    <img class="w-6 h-6 title-svg" src="assets/svgs/{{currentHourForecast.forecastStatus}}.svg" />
 
     <span class="font-serif">{{currentHourForecast.temperature_2m}} °C</span>
   </div>
+
+  <button mat-icon-button [matMenuTriggerFor]="menu" class="ml-auto">
+    <mat-icon class="h-full flex items-center title float-right">favorite</mat-icon>
+  </button>
+
+  <mat-menu #menu="matMenu">
+    <ng-container *ngIf="favoriteCities$ | async as favoriteCities">
+      <span *ngIf="!favoriteCities || !favoriteCities.length" class="px-2 w-20 h-12">
+        No favorite cities!
+      </span>
+
+      <button *ngFor="let favoriteCity of favoriteCities" mat-menu-item (click)="selectCity(favoriteCity)" class="flex items-center">
+        <span class="flex items-center">
+          <button class="mr-2" mat-icon-button (click)="removeCity(favoriteCity)">
+            <mat-icon>close</mat-icon>
+          </button>
+        
+          <span>{{favoriteCity.name}}</span>
+        </span>
+      </button>
+    </ng-container>
+  </mat-menu>
 </mat-toolbar>

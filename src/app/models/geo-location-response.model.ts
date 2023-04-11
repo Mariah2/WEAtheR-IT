@@ -1,5 +1,5 @@
-import GeoLocationTownModel from "./geo-location-town.model";
+import GeoLocationCityModel from "./geo-location-town.model";
 
 export default interface GeoLocationResponseModel {
-    results: GeoLocationTownModel[];
+    results: GeoLocationCityModel[];
 }
